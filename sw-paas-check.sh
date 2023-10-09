@@ -44,10 +44,10 @@ compare_versions() {
 ###
 
 #Get version installed
-SHOPWARE_INSTALLEDVERSION=`composer show shopware/core -d $PLATFORM_APP_DIR --no-cache | sed -n '/version/s/^[^0-9]\+\([^,]\+\).*$/\1/p'`
+SHOPWARE_INSTALLEDVERSION=$(composer show shopware/core -d "$PLATFORM_APP_DIR" --no-cache | sed -n '/version/s/^[^0-9]\+\([^,]\+\).*$/\1/p')
 
 #Get latest version available
-SHOPWARE_LATESTVERSION=`curl -s https://repo.packagist.org/p2/shopware/core.json | jq -r '.packages."shopware/core"[0].version' | sed -n 's/^[^0-9]\+\([^,]\+\).*$/\1/p'`
+SHOPWARE_LATESTVERSION=$(curl -s https://repo.packagist.org/p2/shopware/core.json | jq -r '.packages."shopware/core"[0].version' | sed -n 's/^[^0-9]\+\([^,]\+\).*$/\1/p')
 
 if [[ "$SHOPWARE_INSTALLEDVERSION" == "$SHOPWARE_LATESTVERSION" ]]; then
   STATUS="${GREEN}ok${NC}"
@@ -64,7 +64,7 @@ echo -e "shopware/core installed=$SHOPWARE_INSTALLEDVERSION latest=$SHOPWARE_LAT
 export HOME=/tmp
 
 if [[ -f "/tmp/fastly/fastly" ]]; then
-    FASTLY_VCL_SNIPPETS_CONFIGURED=`/tmp/fastly/fastly vcl snippet list --version=active -j | jq 'map(select(.Name | test("shopware_(deliver|fetch|hash|hit|recv)"; "i"))) | length == 5'`
+    FASTLY_VCL_SNIPPETS_CONFIGURED=$(/tmp/fastly/fastly vcl snippet list --version=active -j | jq 'map(select(.Name | test("shopware_(deliver|fetch|hash|hit|recv)"; "i"))) | length == 5')
 
     if [[ "$FASTLY_VCL_SNIPPETS_CONFIGURED" == "true" ]]; then
         STATUS="${GREEN}configured${NC}"
@@ -81,7 +81,7 @@ echo -e "Fastly VCL snippets ... $STATUS"
 ###
 ### Check Fastly Enabled
 ###
-FASTLY_ENABLED=`$PLATFORM_APP_DIR/bin/console debug:container --parameter storefront.reverse_proxy.fastly.enabled --raw --format json | jq '.["storefront.reverse_proxy.fastly.enabled"]'`
+FASTLY_ENABLED=$("$PLATFORM_APP_DIR"/bin/console debug:container --parameter storefront.reverse_proxy.fastly.enabled --raw --format json | jq '.["storefront.reverse_proxy.fastly.enabled"]')
 
 if [[ "$FASTLY_ENABLED" == "true" ]]; then
     STATUS="${GREEN}enabled${NC}"
@@ -95,7 +95,7 @@ echo -e "Fastly ... $STATUS"
 ###
 ### Check Soft-Purges
 ###
-FASTLY_SOFT_PURGES_ENABLED=`$PLATFORM_APP_DIR/bin/console debug:container --parameter storefront.reverse_proxy.fastly.soft_purge --raw --format json | jq '.["storefront.reverse_proxy.fastly.soft_purge"]=="1"'`
+FASTLY_SOFT_PURGES_ENABLED=$("$PLATFORM_APP_DIR"/bin/console debug:container --parameter storefront.reverse_proxy.fastly.soft_purge --raw --format json | jq '.["storefront.reverse_proxy.fastly.soft_purge"]=="1"')
 
 if [[ "$FASTLY_SOFT_PURGES_ENABLED" == "true" ]]; then
     STATUS="${GREEN}enabled${NC}"
@@ -112,7 +112,7 @@ echo -e "Fastly soft-purges ... $STATUS"
 compare_versions "$SHOPWARE_INSTALLEDVERSION" "6.5"
 version_comparison="$?"
 if [ "$version_comparison" -eq 0 ]; then
-    CSRF_CONFIGURED=`$PLATFORM_APP_DIR/bin/console debug:container --parameter storefront.csrf --raw --format json | jq '(.["storefront.csrf"].enabled == false) or (.["storefront.csrf"].enabled == true and .["storefront.csrf"].mode == "ajax")'`
+    CSRF_CONFIGURED=$("$PLATFORM_APP_DIR"/bin/console debug:container --parameter storefront.csrf --raw --format json | jq '(.["storefront.csrf"].enabled == false) or (.["storefront.csrf"].enabled == true and .["storefront.csrf"].mode == "ajax")')
 
     if [[ "$CSRF_CONFIGURED" == "true" ]]; then
         STATUS="${GREEN}valid configuration${NC}"
